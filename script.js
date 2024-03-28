@@ -1,82 +1,105 @@
-// script.js
-const expenseForm = document.getElementById("expense-form");
-const expenseList = document.getElementById("expense-list");
-const totalAmountElement = document.getElementById("total-amount");
+// script.js 
+// Get form, expense list, and total amount elements 
+const expenseForm = 
+	document.getElementById("expense-form"); 
+const expenseList = 
+	document.getElementById("expense-list"); 
+const totalAmountElement = 
+	document.getElementById("total-amount"); 
 
-let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+// Initialize expenses array from localStorage 
+let expenses = 
+	JSON.parse(localStorage.getItem("expenses")) || []; 
 
-// script.js
+// Function to render expenses in tabular form 
+function renderExpenses() { 
 
-const Expense = require('./db'); // Import the Expense model
+	// Clear expense list 
+	expenseList.innerHTML = ""; 
 
-// Now you can use the Expense model to perform database operations
-// For example, you can create a new expense like this:
-const newExpense = new Expense({
-    name: 'Groceries',
-    amount: 50
-});
-newExpense.save().then(() => {
-    console.log('Expense saved successfully');
-}).catch(err => {
-    console.error('Error saving expense:', err);
-});
+	// Initialize total amount 
+	let totalAmount = 0; 
 
+	// Loop through expenses array and create table rows 
+	for (let i = 0; i < expenses.length; i++) { 
+		const expense = expenses[i]; 
+		const expenseRow = document.createElement("tr"); 
+		expenseRow.innerHTML = ` 
+	<td>${expense.name}</td> 
+	<td>$${expense.amount}</td> 
+	<td class="delete-btn" data-id="${i}">Delete</td> 
+	`; 
+		expenseList.appendChild(expenseRow); 
 
-function renderExpenses() {
-    expenseList.innerHTML = "";
-    let totalAmount = 0;
+		// Update total amount 
+		totalAmount += expense.amount; 
+	} 
 
-    expenses.forEach((expense, index) => {
-        const expenseRow = document.createElement("tr");
-        expenseRow.innerHTML = `
-            <td>${expense.name}</td>
-            <td>$${expense.amount.toFixed(2)}</td>
-            <td class="delete-btn" data-id="${index}">Delete</td>
-        `;
-        expenseList.appendChild(expenseRow);
-        totalAmount += expense.amount;
-    });
+	// Update total amount display 
+	totalAmountElement.textContent = 
+		totalAmount.toFixed(2); 
 
-    totalAmountElement.textContent = totalAmount.toFixed(2);
-}
+	// Save expenses to localStorage 
+	localStorage.setItem("expenses", 
+		JSON.stringify(expenses)); 
+} 
 
-function addExpense(event) {
-    event.preventDefault();
+// Function to add expense 
+function addExpense(event) { 
+	event.preventDefault(); 
 
-    const expenseNameInput = document.getElementById("expense-name");
-    const expenseAmountInput = document.getElementById("expense-amount");
-    const expenseName = expenseNameInput.value;
-    const expenseAmount = parseFloat(expenseAmountInput.value);
+	// Get expense name and amount from form 
+	const expenseNameInput = 
+		document.getElementById("expense-name"); 
+	const expenseAmountInput = 
+		document.getElementById("expense-amount"); 
+	const expenseName = 
+		expenseNameInput.value; 
+	const expenseAmount = 
+		parseFloat(expenseAmountInput.value); 
 
-    expenseNameInput.value = "";
-    expenseAmountInput.value = "";
+	// Clear form inputs 
+	expenseNameInput.value = ""; 
+	expenseAmountInput.value = ""; 
 
-    if (expenseName === "" || isNaN(expenseAmount)) {
-        alert("Please enter valid expense details.");
-        return;
-    }
+	// Validate inputs 
+	if (expenseName === "" || isNaN(expenseAmount)) { 
+		alert("Please enter valid expense details."); 
+		return; 
+	} 
 
-    const expense = {
-        name: expenseName,
-        amount: expenseAmount
-    };
+	// Create new expense object 
+	const expense = { 
+		name: expenseName, 
+		amount: expenseAmount, 
+	}; 
 
-    expenses.push(expense);
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-    
-    renderExpenses();
-}
+	// Add expense to expenses array 
+	expenses.push(expense); 
 
-function deleteExpense(event) {
-    if (event.target.classList.contains("delete-btn")) {
-        const expenseIndex = parseInt(event.target.getAttribute("data-id"));
-        expenses.splice(expenseIndex, 1);
-        localStorage.setItem("expenses", JSON.stringify(expenses));
-        renderExpenses();
-    }
-}
+	// Render expenses 
+	renderExpenses(); 
+} 
 
-expenseForm.addEventListener("submit", addExpense);
-expenseList.addEventListener("click", deleteExpense);
+// Function to delete expense 
+function deleteExpense(event) { 
+	if (event.target.classList.contains("delete-btn")) { 
 
+		// Get expense index from data-id attribute 
+		const expenseIndex = 
+			parseInt(event.target.getAttribute("data-id")); 
+
+		// Remove expense from expenses array 
+		expenses.splice(expenseIndex, 1); 
+
+		// Render expenses 
+		renderExpenses(); 
+	} 
+} 
+
+// Add event listeners 
+expenseForm.addEventListener("submit", addExpense); 
+expenseList.addEventListener("click", deleteExpense); 
+
+// Render initial expenses on page load 
 renderExpenses();
